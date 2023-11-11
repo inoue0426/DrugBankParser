@@ -55,7 +55,7 @@ def parse_xml(xml_file_path):
             for target in targets:
                 target_name = target.find(f"{namespace}name")
                 if target_name is not None:
-                    drug_data['Targets Name'].append(target_name.text)
+                    drug_info['Targets Name'].append(target_name.text)
                             
         # Uniprot ID
         targets = drug.find(f"{namespace}targets")
