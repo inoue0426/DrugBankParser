@@ -1,4 +1,4 @@
-# DrugBankParser to obtain Drug Name CID, SID, SMILES, Target Name, and UniProt IDs from DrugBank
+# Script to get Drug Name CID, SID, SMILES, Target Name, and UniProt IDs from DrugBank
 
 ## How to use
 
