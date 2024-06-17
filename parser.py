@@ -13,11 +13,12 @@ def load_xml(xml_file):
 
 def parse_drug(root, ns):
     res = pd.DataFrame()
-    for drug in tqdm(root.findall('db:drug', ns)):
-        drug_name = drug.find('db:name', ns).text
-        drugbank_id = drug.find('db:drugbank-id', ns).text[2:]
+    for drug in tqdm(root.findall("db:drug", ns)):
+        drug_name = drug.find("db:name", ns).text
+        drugbank_id = drug.find("db:drugbank-id", ns).text[2:]
         res = parse_targets(drug, ns, res, drug_name, drugbank_id)
     return res
+
 
 def parse_targets(drug, ns, res, drug_name, drugbank_id):
     properties = get_properties(drug, ns)
