@@ -21,36 +21,78 @@ def parse_drug(root, ns):
 
 def parse_targets(drug, ns, res, drug_name, drugbank_id):
     properties = get_properties(drug, ns)
-    targets = drug.find('db:targets', ns)
+    targets = drug.find("db:targets", ns)
     if targets is not None:
-        for target in targets.findall('db:target', ns):
+        for target in targets.findall("db:target", ns):
             target_info = get_target_info(target, ns)
-            res = parse_articles(target, ns, res, drug_name, drugbank_id, **properties, **target_info)
+            res = parse_articles(
+                target, ns, res, drug_name, drugbank_id, **properties, **target_info
+            )
     return res
+
 
 def get_properties(drug, ns):
     return {
-        'SMILES': get_smiles(drug, ns),
-        'PubChem Compound': get_pubchem_cid(drug, ns),
-        'PubChem Substance': get_pubchem_sid(drug, ns)
+        "SMILES": get_smiles(drug, ns),
+        "PubChem Compound": get_pubchem_cid(drug, ns),
+        "PubChem Substance": get_pubchem_sid(drug, ns),
     }
 
+
 def get_smiles(drug, ns):
-    return next((p.find('db:value', ns).text for p in drug.findall('db:calculated-properties/db:property', ns) if p.find('db:kind', ns).text == 'SMILES'), None) or ''
+    return (
+        next(
+            (
+                p.find("db:value", ns).text
+                for p in drug.findall("db:calculated-properties/db:property", ns)
+                if p.find("db:kind", ns).text == "SMILES"
+            ),
+            None,
+        )
+        or ""
+    )
+
 
 def get_pubchem_cid(drug, ns):
-    return next((eid.find('db:identifier', ns).text for eid in drug.findall('db:external-identifiers/db:external-identifier', ns) if eid.find('db:resource', ns).text == 'PubChem Compound'), None) or ''
+    return (
+        next(
+            (
+                eid.find("db:identifier", ns).text
+                for eid in drug.findall(
+                    "db:external-identifiers/db:external-identifier", ns
+                )
+                if eid.find("db:resource", ns).text == "PubChem Compound"
+            ),
+            None,
+        )
+        or ""
+    )
+
 
 def get_pubchem_sid(drug, ns):
-    return next((eid.find('db:identifier', ns).text for eid in drug.findall('db:external-identifiers/db:external-identifier', ns) if eid.find('db:resource', ns).text == 'PubChem Substance'), None) or ''
+    return (
+        next(
+            (
+                eid.find("db:identifier", ns).text
+                for eid in drug.findall(
+                    "db:external-identifiers/db:external-identifier", ns
+                )
+                if eid.find("db:resource", ns).text == "PubChem Substance"
+            ),
+            None,
+        )
+        or ""
+    )
+
 
 def get_target_info(target, ns):
     return {
-        'ID': get_target_id(target, ns),
-        'Name': get_target_name(target, ns),
-        'UniProt ID': get_uniprot_id(target, ns),
-        'Gene Name': get_gene_name(target, ns)
+        "ID": get_target_id(target, ns),
+        "Name": get_target_name(target, ns),
+        "UniProt ID": get_uniprot_id(target, ns),
+        "Gene Name": get_gene_name(target, ns),
     }
+
 
 def get_target_id(target, ns):
     return (
