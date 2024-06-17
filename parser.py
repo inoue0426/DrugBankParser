@@ -10,32 +10,44 @@ def load_xml(xml_file):
 
 def parse_drug(root, ns):
     res = pd.DataFrame()
-    for drug in tqdm(root.findall('db:drug', ns)):
-        drug_name = drug.find('db:name', ns).text
-        drugbank_id = drug.find('db:drugbank-id', ns).text[2:]
-        res = parse_targets(drug, ns, res, drug_name, drugbank_id)
+    drugs = root.findall('db:drug', ns)
+    for drug in tqdm(drugs):
+        result = parse_targets(drug, ns, pd.DataFrame(), None, None)
+        res = pd.concat([res, result], ignore_index=True)
     return res
 
 def parse_targets(drug, ns, res, drug_name, drugbank_id):
-    properties = {
-        'SMILES': get_property_value(drug, ns, 'SMILES'),
-        'PubChem Compound': get_property_value(drug, ns, 'PubChem Compound'),
-        'PubChem Substance': get_property_value(drug, ns, 'PubChem Substance')
-    }
+    properties = get_properties(drug, ns)
     targets = drug.find('db:targets', ns)
     if targets is not None:
         for target in targets.findall('db:target', ns):
-            target_info = {
-                'ID': get_target_id(target, ns),
-                'Name': get_target_name(target, ns),
-                'UniProt ID': get_uniprot_id(target, ns),
-                'Gene Name': get_gene_name(target, ns)
-            }
+            target_info = get_target_info(target, ns)
             res = parse_articles(target, ns, res, drug_name, drugbank_id, **properties, **target_info)
     return res
 
-def get_property_value(element, ns, property_name):
-    return next((p.find('db:value', ns).text for p in element.findall(f'db:calculated-properties/db:property[db:kind="{property_name}"]', ns)), None) or ''
+def get_properties(drug, ns):
+    return {
+        'SMILES': get_smiles(drug, ns),
+        'PubChem Compound': get_pubchem_cid(drug, ns),
+        'PubChem Substance': get_pubchem_sid(drug, ns)
+    }
+
+def get_smiles(drug, ns):
+    return next((p.find('db:value', ns).text for p in drug.findall('db:calculated-properties/db:property', ns) if p.find('db:kind', ns).text == 'SMILES'), None) or ''
+
+def get_pubchem_cid(drug, ns):
+    return next((eid.find('db:identifier', ns).text for eid in drug.findall('db:external-identifiers/db:external-identifier', ns) if eid.find('db:resource', ns).text == 'PubChem Compound'), None) or ''
+
+def get_pubchem_sid(drug, ns):
+    return next((eid.find('db:identifier', ns).text for eid in drug.findall('db:external-identifiers/db:external-identifier', ns) if eid.find('db:resource', ns).text == 'PubChem Substance'), None) or ''
+
+def get_target_info(target, ns):
+    return {
+        'ID': get_target_id(target, ns),
+        'Name': get_target_name(target, ns),
+        'UniProt ID': get_uniprot_id(target, ns),
+        'Gene Name': get_gene_name(target, ns)
+    }
 
 def get_target_id(target, ns):
     return target.find('db:id', ns).text if target.find('db:id', ns) is not None else 'N/A'
